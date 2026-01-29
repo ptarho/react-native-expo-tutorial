@@ -1,7 +1,8 @@
+import domToImage from "dom-to-image";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import { useEffect, useRef, useState } from "react";
-import { ImageSourcePropType, StyleSheet, View } from "react-native";
+import { ImageSourcePropType, Platform, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { captureRef } from "react-native-view-shot";
 
@@ -46,18 +47,36 @@ export default function HomeScreen() {
   };
 
   const onSaveImageAsync = async () => {
-    try {
-      const localUri = await captureRef(imageRef, {
-        // height: 440,
-        quality: 1,
-      });
+    if (Platform.OS !== "web") {
+      try {
+        const localUri = await captureRef(imageRef, {
+          quality: 1,
+        });
 
-      await MediaLibrary.saveToLibraryAsync(localUri);
-      if (localUri) {
-        alert("Saved!");
+        await MediaLibrary.saveToLibraryAsync(localUri);
+        if (localUri) {
+          alert("Saved!");
+        }
+      } catch (err) {
+        console.log(err);
       }
-    } catch (err) {
-      console.log(err);
+    } else {
+      try {
+        const dataUrl = await domToImage.toJpeg(imageRef.current, {
+          quality: 0.95,
+          width: 320,
+          height: 440,
+          style: {
+            borderRadius: 18,
+          },
+        });
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = "sticker-image.jpeg";
+        link.click();
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -71,7 +90,7 @@ export default function HomeScreen() {
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.imageContainer}>
         <View ref={imageRef} collapsable={false}>
-          <ImageViewer imgSource={selectedImage} />
+          <ImageViewer imgSource={selectedImage} imgStyles={styles.image} />
           {pickedEmoji && (
             <EmojiSticker stickerSource={pickedEmoji} imageSize={40} />
           )}
@@ -124,6 +143,9 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flex: 1,
+  },
+  image: {
+    borderRadius: Platform.OS === "web" ? 0 : 18,
   },
   footerContainer: {
     flex: 1 / 3,
