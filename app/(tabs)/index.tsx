@@ -1,7 +1,9 @@
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import * as MediaLibrary from "expo-media-library";
+import { useEffect, useRef, useState } from "react";
 import { ImageSourcePropType, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { captureRef } from "react-native-view-shot";
 
 import ImagePlaceholder from "@/assets/images/background-image.png";
 import Button, { ButtonTheme } from "@/components/Button";
@@ -19,6 +21,8 @@ export default function HomeScreen() {
   const [pickedEmoji, setPickedEmoji] = useState<
     ImageSourcePropType | undefined
   >(undefined);
+  const [premissionResponce, requestPermission] = MediaLibrary.usePermissions();
+  const imageRef = useRef<View>(null);
 
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -42,15 +46,36 @@ export default function HomeScreen() {
   };
 
   const onSaveImageAsync = async () => {
-    // TODO
+    try {
+      const localUri = await captureRef(imageRef, {
+        // height: 440,
+        quality: 1,
+      });
+
+      await MediaLibrary.saveToLibraryAsync(localUri);
+      if (localUri) {
+        alert("Saved!");
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
+
+  useEffect(() => {
+    if (!premissionResponce?.granted) {
+      requestPermission();
+    }
+  }, []);
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <View style={styles.imageContainer}>
-        <ImageViewer imgSource={selectedImage} />
-        {pickedEmoji && (
-          <EmojiSticker stickerSource={pickedEmoji} imageSize={40} />
-        )}
+        <View ref={imageRef} collapsable={false}>
+          <ImageViewer imgSource={selectedImage} />
+          {pickedEmoji && (
+            <EmojiSticker stickerSource={pickedEmoji} imageSize={40} />
+          )}
+        </View>
       </View>
       {showAppOptions ? (
         <View style={styles.optionsContainer}>
