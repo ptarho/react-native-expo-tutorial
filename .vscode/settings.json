@@ -9,11 +9,27 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.codeActionsOnSave.rules": null,
+  "prettier.requireConfig": false,
+  "prettier.enable": true,
+  "prettier.documentSelectors": [
+    "**/*.{ts,tsx,js,jsx,json,css,scss,md}"
+  ],
   "[typescriptreact]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always"
+    }
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
   },
   "[javascript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
   },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
